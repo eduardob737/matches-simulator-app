@@ -1,20 +1,26 @@
 package com.example.simulator.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.simulator.R;
 import com.example.simulator.data.MatchesApi;
 import com.example.simulator.databinding.ActivityMainBinding;
 import com.example.simulator.domain.Match;
+import com.example.simulator.ui.adapter.MatchesAdapter;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
+import java.util.Random;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -26,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private MatchesApi matchesApi;
+    private MatchesAdapter matchesAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -51,22 +58,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupFloatingActionButton() {
-        matchesApi.getMatches().enqueue(new Callback<List<Match>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<Match>> call, @NonNull Response<List<Match>> response) {
-                if (response.isSuccessful()){
-                    List<Match> matches = response.body();
-                    Log.i("SIMULATOR", "Deu tudo certo! Voltaram " + matches.size() + " partidas");
-                } else {
-                    showErrorMessage();
-                }
-            }
+        binding.fabSimulate.setOnClickListener(v -> {
+            v.animate().rotationBy(360).setDuration(500).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
 
-            @Override
-            public void onFailure(Call<List<Match>> call, Throwable t) {
-                Log.i("Simulator", t.getMessage());
-            }
+                    Random random = new Random();
+                    for (int i = 0; i < matchesAdapter.getItemCount(); i++) {
+                        Match match = matchesAdapter.getMatches().get(i);
+                        match.getHomeTeam().setScore(random.nextInt(match.getHomeTeam().getStars() + 1));
+                        match.getAwayTeam().setScore(random.nextInt(match.getAwayTeam().getStars() + 1));
+                        matchesAdapter.notifyItemChanged(i);
+                    }
+
+                }
+            });
         });
+
     }
 
     private void showErrorMessage() {
@@ -74,10 +82,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupMatchesRefresh() {
-        //TODO Atualizar as partidas na ação dw swipe.
+        binding.srlMatches.setOnRefreshListener(this::findMatchesFromApi);
     }
 
     private void setupMatchesList() {
-        //TODO Listar as partidas, consumindo nossa API
+        binding.rvMatches.setHasFixedSize(true);
+        binding.rvMatches.setLayoutManager(new LinearLayoutManager(this));
+
+        findMatchesFromApi();
+    }
+
+    private void findMatchesFromApi() {
+        binding.srlMatches.setRefreshing(true);
+        matchesApi.getMatches().enqueue(new Callback<List<Match>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Match>> call, @NonNull Response<List<Match>> response) {
+                if (response.isSuccessful()){
+                    List<Match> matches = response.body();
+
+                    matchesAdapter = new MatchesAdapter(matches);
+                    binding.rvMatches.setAdapter(matchesAdapter);
+
+                } else {
+                    showErrorMessage();
+                }
+                binding.srlMatches.setRefreshing(false);
+            }
+
+            @Override
+            public void onFailure(Call<List<Match>> call, Throwable t) {
+                Log.i("Simulator", t.getMessage());
+                binding.srlMatches.setRefreshing(false);
+
+            }
+        });
     }
 }
