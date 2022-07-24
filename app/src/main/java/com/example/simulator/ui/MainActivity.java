@@ -19,6 +19,7 @@ import com.example.simulator.ui.adapter.MatchesAdapter;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private MatchesApi matchesApi;
-    private MatchesAdapter matchesAdapter;
+    private MatchesAdapter matchesAdapter = new MatchesAdapter(Collections.emptyList());
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,14 +73,12 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                 }
+
             });
         });
 
     }
 
-    private void showErrorMessage() {
-        Snackbar.make(binding.getRoot(), R.string.error_api, BaseTransientBottomBar.LENGTH_LONG).show();
-    }
 
     private void setupMatchesRefresh() {
         binding.srlMatches.setOnRefreshListener(this::findMatchesFromApi);
@@ -88,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
     private void setupMatchesList() {
         binding.rvMatches.setHasFixedSize(true);
         binding.rvMatches.setLayoutManager(new LinearLayoutManager(this));
+
+        binding.rvMatches.setAdapter(matchesAdapter);
 
         findMatchesFromApi();
     }
@@ -110,11 +111,15 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<List<Match>> call, Throwable t) {
-                Log.i("Simulator", t.getMessage());
+            public void onFailure(@NonNull Call<List<Match>> call, @NonNull Throwable t) {
+                showErrorMessage();
                 binding.srlMatches.setRefreshing(false);
 
             }
         });
+    }
+
+    private void showErrorMessage() {
+        Snackbar.make(binding.getRoot(), R.string.error_api, BaseTransientBottomBar.LENGTH_LONG).show();
     }
 }

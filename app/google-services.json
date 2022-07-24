@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "977086503754",
+    "project_id": "simulator-dio-1502a",
+    "storage_bucket": "simulator-dio-1502a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:977086503754:android:132d1fb879799fc9ebbfb3",
+        "android_client_info": {
+          "package_name": "com.example.simulator"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "977086503754-i6qer7vu5j8ptaag2bavluv8m2pv2b5m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuPiuN-QjMaJ9t8kEzV-oyQNgue6KpJ6U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "977086503754-i6qer7vu5j8ptaag2bavluv8m2pv2b5m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
